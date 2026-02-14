@@ -1,0 +1,209 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+/* Light Mode - Premium Performance (Default) */
+:root {
+  --background: hsl(210, 20%, 98%);
+  --foreground: hsl(222, 47%, 11%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(222, 47%, 11%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(222, 47%, 11%);
+  --primary: hsl(217, 91%, 60%);
+  --primary-foreground: hsl(210, 40%, 98%);
+  --secondary: hsl(174, 90%, 41%);
+  --secondary-foreground: hsl(150, 40%, 98%);
+  --muted: hsl(210, 40%, 96%);
+  --muted-foreground: hsl(215, 16%, 47%);
+  --accent: hsl(12, 90%, 60%);
+  --accent-foreground: hsl(222, 47%, 11%);
+  --destructive: hsl(0, 84%, 60%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --border: hsl(214, 32%, 91%);
+  --input: hsl(214, 32%, 91%);
+  --ring: hsl(221, 83%, 53%);
+  --radius: 1rem;
+  
+  /* Custom fitness app tokens */
+  --energy: hsl(217, 91%, 60%);
+  --confidence: hsl(174, 90%, 41%);
+  --dynamic: hsl(12, 90%, 60%);
+  --glass: hsla(0, 0%, 100%, 0.85);
+  --glass-border: hsla(210, 20%, 90%, 0.6);
+  --glow-energy: hsla(217, 91%, 60%, 0.25);
+  --glow-confidence: hsla(174, 90%, 41%, 0.25);
+}
+
+.dark {
+  --background: hsl(222, 47%, 6%);
+  --foreground: hsl(210, 40%, 98%);
+  --card: hsl(222, 47%, 11%);
+  --card-foreground: hsl(210, 40%, 98%);
+  --popover: hsl(222, 47%, 9%);
+  --popover-foreground: hsl(210, 40%, 98%);
+  --primary: hsl(217, 91%, 65%);
+  --primary-foreground: hsl(222, 47%, 11%);
+  --secondary: hsl(174, 90%, 50%);
+  --secondary-foreground: hsl(222, 47%, 11%);
+  --muted: hsl(217, 32%, 17%);
+  --muted-foreground: hsl(215, 20%, 65%);
+  --accent: hsl(12, 90%, 70%);
+  --accent-foreground: hsl(222, 47%, 11%);
+  --destructive: hsl(0, 62%, 30%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --border: hsl(217, 32%, 17%);
+  --input: hsl(217, 32%, 17%);
+  --ring: hsl(224, 76%, 48%);
+  
+  /* Custom fitness app tokens */
+  --energy: hsl(217, 91%, 65%);
+  --confidence: hsl(174, 90%, 50%);
+  --dynamic: hsl(12, 90%, 70%);
+  --glass: hsla(222, 47%, 11%, 0.7);
+  --glass-border: hsla(217, 32%, 30%, 0.5);
+  --glow-energy: hsla(217, 91%, 65%, 0.35);
+  --glow-confidence: hsla(174, 90%, 50%, 0.35);
+}
+
+@theme inline {
+  --font-sans: 'Inter', 'Geist', sans-serif;
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  
+  /* Fitness app custom colors */
+  --color-energy: var(--energy);
+  --color-confidence: var(--confidence);
+  --color-dynamic: var(--dynamic);
+  --color-glass: var(--glass);
+  --color-glass-border: var(--glass-border);
+  --color-glow-energy: var(--glow-energy);
+  --color-glow-confidence: var(--glow-confidence);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Glassmorphism utilities */
+.glass-card {
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-panel {
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+}
+
+/* Glow effects */
+.glow-energy {
+  box-shadow: 0 0 30px var(--glow-energy), 0 0 60px var(--glow-energy);
+}
+
+.glow-confidence {
+  box-shadow: 0 0 30px var(--glow-confidence), 0 0 60px var(--glow-confidence);
+}
+
+/* Skeleton pulse animation */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.skeleton-pulse {
+  animation: skeleton-pulse 2s ease-in-out infinite;
+}
+
+/* Joint glow states */
+.joint-perfect {
+  fill: oklch(0.65 0.18 180);
+  filter: drop-shadow(0 0 8px oklch(0.65 0.18 180 / 0.8));
+}
+
+.joint-warning {
+  fill: oklch(0.70 0.15 30);
+  filter: drop-shadow(0 0 8px oklch(0.70 0.15 30 / 0.8));
+}
+
+.joint-error {
+  fill: oklch(0.55 0.22 27);
+  filter: drop-shadow(0 0 8px oklch(0.55 0.22 27 / 0.8));
+}
+
+/* Progress ring animation */
+@keyframes progress-spin {
+  from { stroke-dashoffset: 100; }
+  to { stroke-dashoffset: 0; }
+}
+
+/* Card hover glow */
+.card-glow {
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.card-glow:hover {
+  box-shadow: 0 8px 32px var(--glow-energy);
+  transform: translateY(-2px);
+}
+
+/* Touch-friendly button sizing */
+.touch-target {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

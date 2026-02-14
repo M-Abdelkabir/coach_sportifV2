@@ -1,0 +1,45 @@
+# Python-specific
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Environment variables
+.env
+.venv
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Database
+*.db
+*.sqlite3
+
+# Models (optional: exclude if they are too large for Git)
+# backend/models/*.pt
+# backend/models/*.pkl
+# backend/models/*.onnx
+# yolov8n-pose.pt
+
+# Log files
+*.log
