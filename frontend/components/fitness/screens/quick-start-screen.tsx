@@ -148,7 +148,8 @@ export function QuickStartScreen() {
     if (!isConnected) return;
 
     const exerciseIds = exercises.map(e => e.id);
-    startSession(userProfile?.id || "demo_user", exerciseIds);
+    // Pass everything: ID list for exercise selection, and full objects for configs (reps/sets)
+    startSession(userProfile?.id || "demo_user", exerciseIds, 15, 3, exercises);
 
     const { wsManager } = require("@/lib/api-client");
 

@@ -29,7 +29,7 @@ interface UseWebSocketReturn {
     disconnect: () => void;
     send: (type: string, data?: Record<string, unknown>) => boolean;
     // Session controls
-    startSession: (userId: string, exercises: string[]) => boolean;
+    startSession: (userId: string, exercises: string[], targetReps?: number, targetSets?: number, exerciseConfigs?: any[]) => boolean;
     stopSession: () => boolean;
     pause: () => boolean;
     resume: () => boolean;
@@ -73,8 +73,8 @@ export function useWebSocket(options: UseWebSocketOptions = {}): UseWebSocketRet
         return wsManager.send(type, data);
     }, []);
 
-    const startSession = useCallback((userId: string, exercises: string[]) => {
-        if (wsManager.isConnected) return wsManager.startSession(userId, exercises);
+    const startSession = useCallback((userId: string, exercises: string[], targetReps?: number, targetSets?: number, exerciseConfigs?: any[]) => {
+        if (wsManager.isConnected) return wsManager.startSession(userId, exercises, targetReps, targetSets, exerciseConfigs);
         return false;
     }, []);
 
@@ -305,9 +305,9 @@ export function useFeedback(): FeedbackMessage | null {
 
     useEffect(() => {
         const unsubscribe = wsManager.on("feedback", (message: WSMessage) => {
-            const data = message.data as { 
-                status: string; 
-                message: string; 
+            const data = message.data as {
+                status: string;
+                message: string;
                 issues?: string[];
                 ml_class?: string;
                 ml_confidence?: number;
@@ -327,7 +327,7 @@ export function useFeedback(): FeedbackMessage | null {
         const unsubExercise = wsManager.on("exercise_update", (message: WSMessage) => {
             const data = message.data as unknown as ExerciseUpdate;
             if (!data || !data.ml_class) return;
-            
+
             // Create feedback from ML classification
             setFeedback({
                 status: data.ml_class.includes("Correct") ? "perfect" : "warning",
@@ -473,13 +473,13 @@ export function useCalibration(): CalibrationState {
         const unsubComplete = wsManager.on("calibration_complete", (message: WSMessage) => {
             const data = message.data as CalibrationState["result"];
             if (!data) return;
-            
+
             // Add body_type with fallback
             const enhancedData = {
                 ...data,
                 body_type: data.body_type || 'unknown'
             };
-            
+
             setState({
                 isCalibrating: false,
                 progress: 1,

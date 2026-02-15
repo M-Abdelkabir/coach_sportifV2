@@ -679,8 +679,23 @@ async def websocket_endpoint(websocket: WebSocket):
                         current_user_id = msg_data.get("user_id")
                         current_exercises = msg_data.get("exercises", ["squat"])
                         current_exercise_idx = 0
-                        target_reps = msg_data.get("target_reps", 15)
-                        target_sets = msg_data.get("target_sets", 3)
+                        
+                        # Store per-exercise configs if provided
+                        exercise_configs = msg_data.get("exercise_configs", [])
+                        print(f"[WS] Received exercise_configs: {exercise_configs}")
+                        
+                        # Default global targets
+                        default_target_reps = msg_data.get("target_reps", 15)
+                        default_target_sets = msg_data.get("target_sets", 3)
+                        
+                        # Set current targets based on config or defaults
+                        if exercise_configs and len(exercise_configs) > 0:
+                            target_reps = exercise_configs[0].get("reps", default_target_reps)
+                            target_sets = exercise_configs[0].get("sets", default_target_sets)
+                        else:
+                            target_reps = default_target_reps
+                            target_sets = default_target_sets
+                        
                         current_set = 1
                         
                         session_active = True
@@ -710,14 +725,16 @@ async def websocket_endpoint(websocket: WebSocket):
                         # First exercise set
                         first_ex = current_exercises[0]
                         feedback_engine.speak(f"Séance démarrée! Premier exercice: {first_ex}")
-                        print(f"[WS] Session started for user {current_user_id} with {len(current_exercises)} exercises")
+                        print(f"[WS] Session started for user {current_user_id} with {len(current_exercises)} exercises. Initial targets: {target_reps} reps, {target_sets} sets")
                         
                         await websocket.send_json({
                             "type": "session_started",
                             "data": {
                                 "user_id": current_user_id,
                                 "exercises": current_exercises,
-                                "current_exercise": first_ex
+                                "current_exercise": first_ex,
+                                "target_reps": target_reps,
+                                "target_sets": target_sets
                             }
                         })
 
@@ -738,6 +755,12 @@ async def websocket_endpoint(websocket: WebSocket):
                             exercise_engine.reset()
                             exercise_start_time = time.time()
                             active_session_id = None
+                            
+                            # Update targets for the new exercise
+                            if exercise_configs and idx < len(exercise_configs):
+                                target_reps = exercise_configs[idx].get("reps", default_target_reps)
+                                target_sets = exercise_configs[idx].get("sets", default_target_sets)
+                            
                             # Don't reset calories_at_start here, as calories are global for session
                             # But we want to track current exercise calories
                             calories_at_exercise_start = hardware.get_status()["calories_burned"]
@@ -748,10 +771,16 @@ async def websocket_endpoint(websocket: WebSocket):
                             
                             ex_name = current_exercises[idx]
                             feedback_engine.speak(f"Exercice suivant: {ex_name}")
-                            print(f"[WS] Exercise switched to: {ex_name} (index {idx})")
+                            print(f"[WS] Exercise switched to: {ex_name} (index {idx}). New targets: {target_reps} reps, {target_sets} sets")
                             await websocket.send_json({
                                 "type": "exercise_change",
-                                "data": {"index": idx, "name": ex_name, "immediate": True}
+                                "data": {
+                                    "index": idx, 
+                                    "name": ex_name, 
+                                    "immediate": True,
+                                    "target_reps": target_reps,
+                                    "target_sets": target_sets
+                                }
                             })
                 
                     elif msg_type == "stop_session":
@@ -936,8 +965,23 @@ async def websocket_endpoint(websocket: WebSocket):
                                             active_session_id = None
                                             calories_at_exercise_start = hardware.get_status()["calories_burned"]
                                             
+                                            # Update targets for the new exercise
+                                            if exercise_configs and current_exercise_idx < len(exercise_configs):
+                                                target_reps = exercise_configs[current_exercise_idx].get("reps", default_target_reps)
+                                                target_sets = exercise_configs[current_exercise_idx].get("sets", default_target_sets)
+                                            else:
+                                                target_reps = default_target_reps
+                                                target_sets = default_target_sets
+                                                
                                             feedback_engine.exercise_transition(current_exercises[current_exercise_idx], 60)
-                                            await websocket.send_json({"type": "exercise_change", "data": {"index": current_exercise_idx}})
+                                            await websocket.send_json({
+                                                "type": "exercise_change", 
+                                                "data": {
+                                                    "index": current_exercise_idx,
+                                                    "target_reps": target_reps,
+                                                    "target_sets": target_sets
+                                                }
+                                            })
                                         else:
                                             # Final exercise completed!
                                             reps_to_add = exercise_engine.state.total_reps

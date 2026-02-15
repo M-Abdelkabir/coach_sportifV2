@@ -134,7 +134,7 @@ class APIClient {
       return response.json() as Promise<T>;
     } catch (err) {
       console.error(`Request failed for ${endpoint}:`, err);
-      throw err; 
+      throw err;
     }
   }
 
@@ -372,12 +372,13 @@ class WebSocketManager {
   }
 
   // Convenience methods for common operations
-  startSession(userId: string, exercises: string[], targetReps = 15, targetSets = 3) {
+  startSession(userId: string, exercises: string[], targetReps = 15, targetSets = 3, exerciseConfigs?: any[]) {
     return this.send('start_session', {
       user_id: userId,
       exercises,
       target_reps: targetReps,
       target_sets: targetSets,
+      exercise_configs: exerciseConfigs
     });
   }
 
