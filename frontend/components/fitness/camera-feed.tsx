@@ -37,7 +37,11 @@ export function CameraFeed({
   useEffect(() => {
     const checkBackend = async () => {
       try {
-        const res = await fetch(`${API_URL}/`);
+        const res = await fetch(`${API_URL}/`, {
+          headers: {
+            'ngrok-skip-browser-warning': 'true',
+          },
+        });
         if (res.ok) {
           const data = await res.json();
 
