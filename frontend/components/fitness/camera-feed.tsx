@@ -105,22 +105,24 @@ export function CameraFeed({
 
   return (
     <div className={cn("relative w-full h-full overflow-hidden bg-black rounded-3xl border border-white/10 shadow-2xl flex items-center justify-center", className)}>
-      {/* Backend Stream Image */}
+      {/* Video Feed (Manual Fetch Mode for ngrok support) */}
+      <img
+        ref={(el) => {
+          if (!el) return;
+          // Store reference for manual updating
+          (window as any).videoElement = el;
+        }}
+        alt="Live Feed"
+        className={cn(
+          "absolute inset-0 w-full h-full object-contain",
+          mirror && "scale-x-[-1]",
+          !isConnected && "opacity-0"
+        )}
+      />
+
+      {/* Script to manually fetch frames - bypasses ngrok warning */}
       {isConnected && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={`${API_URL}/video_feed`}
-          alt="Live Feed"
-          onError={(e) => {
-            console.error("Video feed error:", e);
-            setError("Erreur chargement vidéo backend");
-            setIsConnected(false);
-          }}
-          className={cn(
-            "absolute inset-0 w-full h-full object-contain",
-            mirror && "scale-x-[-1]"
-          )}
-        />
+        <FrameFetcher apiUrl={API_URL} />
       )}
 
       {/* Mode Status Badge */}
@@ -225,15 +227,86 @@ export function CameraFeed({
       <div className="absolute bottom-6 right-6 z-50">
         <button
           onClick={() => setIsDebugMode(!isDebugMode)}
-          className={cn(
-            "p-3 rounded-2xl transition-all glass-panel border border-white/10 shadow-xl",
-            isDebugMode ? "bg-amber-500/20 text-amber-500 border-amber-500/50" : "text-white/40 hover:text-white"
-          )}
-          title="Toggle Debug Mode"
+          className="p-2 rounded-full bg-black/50 text-white/50 hover:text-white hover:bg-black/70 transition-all"
         >
-          <Bug className="h-5 w-5" />
+          <Bug className="h-4 w-4" />
         </button>
       </div>
     </div>
   );
+}
+
+// Component to manually fetch frames and bypass ngrok warning
+function FrameFetcher({ apiUrl }: { apiUrl: string }) {
+  const requestRef = useRef<number | null>(null);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    isMounted.current = true;
+    let timeoutId: NodeJS.Timeout;
+
+    const fetchFrame = async () => {
+      // If unmounted, stop immediately
+      if (!isMounted.current) return;
+
+      try {
+        const response = await fetch(`${apiUrl}/video_frame`, {
+          headers: {
+            'ngrok-skip-browser-warning': 'true',
+            'Cache-Control': 'no-cache'
+          }
+        });
+
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = URL.createObjectURL(blob);
+
+          if (!isMounted.current) {
+            URL.revokeObjectURL(url);
+            return;
+          }
+
+          // Update the image element directly
+          const imgEl = (window as any).videoElement as HTMLImageElement;
+          if (imgEl) {
+            // Revoke previous URL to prevent memory leaks
+            const prevUrl = imgEl.src;
+            if (prevUrl && prevUrl.startsWith('blob:')) {
+              URL.revokeObjectURL(prevUrl);
+            }
+            imgEl.src = url;
+
+            // Force layout update if needed, but usually src change is enough
+          } else {
+            URL.revokeObjectURL(url);
+          }
+        }
+      } catch (e) {
+        // Silent fail on frame fetch, will retry
+      }
+
+      if (isMounted.current) {
+        // Limit FPS to around 30 to avoid browser overload (33ms)
+        // We use setTimeout to ensure we don't spam if requests are slow
+        timeoutId = setTimeout(() => {
+          if (isMounted.current) {
+            requestRef.current = requestAnimationFrame(fetchFrame);
+          }
+        }, 33);
+      }
+    };
+
+    // Start loop
+    fetchFrame();
+
+    return () => {
+      isMounted.current = false;
+      if (timeoutId) clearTimeout(timeoutId);
+      if (requestRef.current) {
+        cancelAnimationFrame(requestRef.current);
+      }
+    };
+  }, [apiUrl]);
+
+  return null; // Logic only component
 }

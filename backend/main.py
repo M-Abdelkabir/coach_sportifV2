@@ -7,6 +7,7 @@ import json
 import time
 import os
 import cv2  # Added for video streaming
+import io   # Added for BytesIO
 from contextlib import asynccontextmanager
 from typing import Optional, Dict, Any, List
 import numpy as np
@@ -359,6 +360,44 @@ async def video_feed(cam_id: int = 0):
     return StreamingResponse(
         generate_frames(getattr(pose_detector, 'camera_id', cam_id)),
         media_type="multipart/x-mixed-replace; boundary=frame"
+    )
+
+
+@app.get("/video_frame")
+async def get_video_frame(cam_id: int = 0):
+    """
+    Get a single frame for manual fetching (fixes ngrok issues).
+    """
+    pose_detector = get_pose_detector()
+    
+    # Ensure camera is running
+    if not pose_detector.is_running:
+         pose_detector.start_camera(camera_id=cam_id)
+         
+    success, frame = pose_detector.get_frame()
+    
+    if not success or frame is None:
+        # Create a black frame with "Loading..." text
+        loading_frame = np.zeros((480, 640, 3), dtype=np.uint8)
+        cv2.putText(loading_frame, "Initialisation...", (150, 240), 
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+        loading_frame = cv2.flip(loading_frame, 1)
+        frame = loading_frame
+    else:
+        # Draw skeleton if pose available
+        if pose_detector.latest_result:
+            frame = pose_detector.draw_pose(frame)
+        # Resize for performance
+        frame = cv2.resize(frame, (640, 480))
+
+    # Encode to JPEG
+    ret, buffer = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 60])
+    if not ret:
+        raise HTTPException(500, "Encoding failed")
+        
+    return StreamingResponse(
+        io.BytesIO(buffer.tobytes()), 
+        media_type="image/jpeg"
     )
 
 
