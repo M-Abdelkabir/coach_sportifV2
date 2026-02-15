@@ -531,9 +531,9 @@ export function useProfile(initialUserId?: string): UseProfileReturn {
         setError(null);
         try {
             const result = await api.createProfile(name);
-            if (result.data) {
-                setProfile(result.data);
-                return result.data;
+            if (result) {
+                setProfile(result);
+                return result;
             }
             return null;
         } catch (e: unknown) {
