@@ -31,6 +31,9 @@ class HardwareState:
     calories_burned: float = 0.0
     water_glasses_equivalent: float = 0.0  # ~8 calories = 1 glass of water saved
     
+    # Actuators simulation
+    camera_pan: float = 0.0  # -90 to 90 degrees
+    
     # Session timing
     session_start: float = field(default_factory=time.time)
     last_update: float = field(default_factory=time.time)
@@ -220,7 +223,8 @@ class HardwareSimulator:
             "calories_burned": round(self.state.calories_burned, 1),
             "water_glasses_saved": round(self.state.water_glasses_equivalent, 1),
             "session_duration_seconds": int(session_duration),
-            "is_exercising": self._is_exercising
+            "is_exercising": self._is_exercising,
+            "camera_pan": round(self.state.camera_pan, 1)
         }
     
     def should_pause_exercise(self) -> tuple[bool, Optional[str]]:
@@ -271,7 +275,12 @@ class HardwareSimulator:
         elif calories < 300:
             return f"Excellent! {calories:.0f} calories! Tu as économisé l'équivalent de {glasses:.1f} boissons sucrées!"
         else:
-            return f"Incroyable! {calories:.0f} calories brûlées! C'est comme {glasses:.1f} sodas en moins!"
+            return f"Incroyable! {calories:.0f} calories brûlées! C'est comme {glasses:.1f} verres de soda évités!"
+
+    def set_pan(self, angle: float):
+        """Simulate setting camera pan angle."""
+        self.state.camera_pan = max(-90, min(90, angle))
+        # print(f"[HW-SIM] Camera pan adjusted to: {self.state.camera_pan:.1f}°")
 
 
 # Global hardware simulator instance

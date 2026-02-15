@@ -13,6 +13,7 @@ import os
 import threading
 import queue
 from concurrent.futures import ThreadPoolExecutor
+from hardware_manager import get_hardware_manager
 
 # MediaPipe Tasks imports
 import mediapipe as mp
@@ -188,6 +189,11 @@ class PoseDetector:
         self._detector_active = True # Lifecycle for the worker thread
         self._worker_thread = threading.Thread(target=self._worker_loop, daemon=True)
         self._worker_thread.start()
+
+        # Centering state
+        self.current_pan_angle = 0
+        self.pan_sensitivity = 45.0  # Degrees of pan per 1.0 of normalized offset
+        self.pan_threshold = 0.1     # Only move if offset > 10% from center
 
     def _load_yolo_model(self):
         """Load YOLO model for pose detection."""
@@ -452,6 +458,44 @@ class PoseDetector:
             # Flip coordinates back for MediaPipe too
             self._flip_result_coordinates(result, w)
             self.latest_result = result
+            
+            # Auto-centering logic
+            self._update_auto_centering(result)
+
+        return result
+
+    def _update_auto_centering(self, result: Dict[str, Any]):
+        """
+        Calculate user offset from center and adjust camera pan.
+        """
+        if not result or "keypoints" not in result:
+            return
+
+        # Calculate average X position of main torso points
+        torso_points = ["left_shoulder", "right_shoulder", "left_hip", "right_hip"]
+        x_coords = []
+        for p in torso_points:
+            if p in result["keypoints"] and result["keypoints"][p].get("visibility", 0) > 0.5:
+                x_coords.append(result["keypoints"][p]["normalized"]["x"])
+        
+        if not x_coords:
+            return
+
+        avg_x = sum(x_coords) / len(x_coords)
+        offset = avg_x - 0.5  # 0 is center, -0.5 is left, 0.5 is right
+        
+        # Only adjust if beyond threshold
+        if abs(offset) > self.pan_threshold:
+            # Simple proportional adjustment
+            # Note: We subtract because if user is to the right (offset > 0), 
+            # we need to rotate camera to the right (negative or positive depending on mounting)
+            # Assuming positive pan = right
+            adjustment = offset * self.pan_sensitivity * 0.1 # Small step
+            self.current_pan_angle = max(-90, min(90, self.current_pan_angle + adjustment))
+            
+            get_hardware_manager().set_camera_pan(self.current_pan_angle)
+            if self.frame_count % 30 == 0:
+                print(f"[POSE] Auto-centering: user at {avg_x:.2f}, pan set to {self.current_pan_angle:.1f}°")
         # elif self.frame_count % 30 == 0:
         #      print("[POSE] MediaPipe also failed to detect body")
              

@@ -1,6 +1,9 @@
 @echo off
 REM Virtual Sports Coach - Windows Dependency Installer
 
+REM Change directory to the backend root
+cd /d "%~dp0.."
+
 echo ========================================
 echo Virtual Sports Coach - Dependency Setup
 echo ========================================

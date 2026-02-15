@@ -1,6 +1,10 @@
 #!/bin/bash
 # Setup script for Raspberry Pi 5
-echo "[PI-SETUP] Starting Virtual Sports Coach setup for Raspberry Pi..."
+
+# Change directory to the backend root
+cd "$(dirname "$0")/.."
+
+echo "[PI-SETUP] Starting Virtual Sports Coach setup for Raspberry Pi in $(pwd)..."
 
 # Update system
 sudo apt-get update

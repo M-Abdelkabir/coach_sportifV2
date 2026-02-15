@@ -1,7 +1,10 @@
 #!/bin/bash
 # Install backend dependencies for Virtual Sports Coach
 
-echo "Installing Python dependencies..."
+# Change directory to the backend root
+cd "$(dirname "$0")/.."
+
+echo "Installing Python dependencies in $(pwd)..."
 sudo pip3 install fastapi uvicorn mediapipe opencv-python numpy aiosqlite pydantic ultralytics onnxruntime pyttsx3 scikit-learn
 
 echo "Installing system dependencies for Raspberry Pi (if applicable)..."

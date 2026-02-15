@@ -1,7 +1,10 @@
 @echo off
 setlocal enabledelayedexpansion
 
-echo [BACKEND] Starting Virtual Sports Coach Backend...
+REM Change directory to the backend root (one level up from scripts)
+cd /d "%~dp0.."
+
+echo [BACKEND] Starting Virtual Sports Coach Backend from %CD%...
 echo.
 
 REM --- VENV CHECK ---

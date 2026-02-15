@@ -30,7 +30,7 @@ echo [1/2] Launching Backend...
 echo     - Creating/Activating venv
 echo     - Installing dependencies
 echo     - Starting FastAPI server
-start "Virtual Sports Coach - Backend" cmd /k "cd backend && call run_backend.bat"
+start "Virtual Sports Coach - Backend" cmd /k "cd backend/scripts && call run_backend.bat"
 
 REM --- FRONTEND STARTUP ---
 echo.

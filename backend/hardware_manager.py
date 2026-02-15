@@ -4,6 +4,7 @@ and a simulator based on availability and platform.
 """
 import platform
 import os
+import time
 from typing import Any, Dict, Optional
 
 # Import controllers
@@ -91,10 +92,15 @@ class HardwareManager:
 
     def set_camera_pan(self, angle: float):
         """Set camera pan angle."""
+        self.sim.set_pan(angle)
         if self.use_real_hw:
             self.pi.set_pan(angle)
         else:
-            print(f"[HW-MGR] SIM CAMERA PAN: {angle}°")
+            # Throttle simulation logs to avoid clutter (reduced to 0.5s for better feedback)
+            if hasattr(self, '_last_sim_pan_log') and time.time() - self._last_sim_pan_log < 0.5:
+                return
+            self._last_sim_pan_log = time.time()
+            print(f"[HW-MGR] SIM CAMERA PAN: {angle:.1f}°")
 
 # Global instance
 _manager: Optional[HardwareManager] = None

@@ -1,97 +1,110 @@
-# Coach Sportif Virtuel - Documentation Complète
+# Virtual Sports Coach - Complete Documentation
 
-Bienvenue dans le projet **Coach Sportif Virtuel**. Ce document explique en détail le fonctionnement du système, son architecture, ses fonctionnalités et les prérequis nécessaires.
-
----
-
-## Architecture du Projet
-
-Le projet suit une architecture **Client-Serveur** moderne avec une séparation nette entre le traitement de données (Backend) et l'interface utilisateur (Frontend).
-
-### 1. Structure Globale
-- **Backend** : Serveur FastAPI (Python) qui gère la capture de la caméra, traite les flux de données en temps réel et expose un flux vidéo MJPEG.
-- **Frontend** : Application React/Next.js qui affiche l'interface, reçoit le flux vidéo du backend et affiche les feedbacks utilisateur.
-- **Modèles ML** : Moteurs d'intelligence artificielle pour la détection de pose et la classification d'exercices.
-
-### 2. Flux de Données (Real-time)
-1. Le **Backend** capture les images directement de la caméra (via OpenCV).
-2. Le **Backend** traite chaque image avec **MediaPipe** pour extraire 33 points clés.
-3. Les modèles **LSTM** et **ONNX** analysent ces points pour valider la posture.
-4. Le **Backend** envoie les résultats (répétitions, erreurs, confiance) via **WebSockets**.
-5. Parallèlement, le **Backend** diffuse le flux vidéo traité (avec squelette) via un endpoint HTTP (`/video_feed`).
-6. Le **Frontend** reçoit le flux vidéo et affiche les feedbacks dynamiques.
+Welcome to the **Virtual Sports Coach** project. This document explains in detail how the system works, its architecture, its features, and the necessary prerequisites.
 
 ---
 
-## Fonctionnalités Principales
+## Project Architecture
 
-### 1. Analyse de Pose en Temps Réel
-Utilisation de **MediaPipe** et **YOLOv11-Pose** pour suivre les mouvements du corps avec une précision millimétrique, même sur des machines peu puissantes (comme le Raspberry Pi).
+The project follows a modern **Client-Server** architecture with a clear separation between data processing (Backend) and the user interface (Frontend).
 
-### 2. Classification Intelligente (LSTM)
-Un modèle de réseau de neurones récurrent (LSTM) analyse les séquences de mouvements pour identifier précisément l'exercice effectué (Squat, Pushup) et sa qualité.
+### 1. Global Structure
+- **Backend**: FastAPI server (Python) that handles camera capture, processes real-time data streams, and exposes an MJPEG video stream.
+- **Frontend**: React/Next.js application that displays the interface, receives the video stream from the backend, and shows user feedback.
+- **ML Models**: Artificial Intelligence engines for pose detection and exercise classification.
 
-### 3. Validation de Posture & Corrections Vocales
-- **Validation** : Le système détecte si le dos est droit, si les genoux sont bien alignés, etc.
-- **Feedback Vocal** : Utilisation de l'API **Web Speech** pour donner des conseils en français (ex: "Gardez le dos droit !") sans que l'utilisateur ait besoin de regarder l'écran.
-
-### 4. Suivi des Performances
-- **Compteur de répétitions** : Détection automatique des phases de montée et descente.
-- **Historique** : Sauvegarde des sessions dans une base de données **SQLite**.
-- **Statistiques** : Visualisation des progrès via un tableau de bord.
-
-### 5. Mode Hybride (Pi + PC)
-Possibilité de faire tourner le backend sur un Raspberry Pi et le frontend sur un PC, ou tout sur la même machine.
+### 2. Data Flow (Real-time)
+1. The **Backend** captures images directly from the camera (via OpenCV).
+2. The **Backend** processes each image with **MediaPipe** to extract 33 key points.
+3. The **LSTM** and **ONNX** models analyze these points to validate posture.
+4. The **Backend** sends results (repetitions, errors, confidence) via **WebSockets**.
+5. Simultaneously, the **Backend** broadcasts the processed video stream (with skeleton) via an HTTP endpoint (`/video_feed`).
+6. The **Frontend** receives the video stream and displays dynamic feedback.
 
 ---
 
-## Exigences Techniques
+## Core Features
 
-### Logiciels (Software)
-- **Python 3.9+** : Pour le moteur de calcul et l'IA.
-- **Node.js 18+** : Pour l'interface utilisateur.
-- **Bibliothèques Clés** :
-  - `mediapipe` : Détection de squelette.
-  - `fastapi` : Serveur web haute performance.
-  - `ultralytics` (YOLO) : Alternative pour la pose.
-  - `tensorflow/keras` : Pour le modèle LSTM.
+### 1. Real-Time Pose Analysis
+Using **MediaPipe** and **YOLOv11-Pose** to track body movements with millimeter precision, even on low-power machines (like the Raspberry Pi).
 
-### Matériel (Hardware)
-- **Webcam** : 720p recommandé pour une meilleure détection.
-- **Processeur** : CPU moderne (Intel i5/Ryzen 5) ou Raspberry Pi 4/5.
-- **Mémoire** : Minimum 4 Go de RAM.
+### 2. Intelligent Classification (LSTM)
+A recurrent neural network model (LSTM) analyzes movement sequences to precisely identify the exercise being performed (Squat, Pushup) and its quality.
+
+### 3. Comfort Features
+- **Camera Auto-Centering**: Uses a servo motor to automatically orient the camera and keep the user in the center of the frame.
+- **Voice Feedback**: Uses the **Web Speech API** to provide tips (e.g., "Keep your back straight!") without the user needing to look at the screen.
+
+### 4. Performance Tracking
+- **Repetition Counter**: Automatic detection of up and down phases.
+- **History**: Session saving in a **SQLite** database.
+- **Statistics**: Progress visualization via a dashboard.
+
+### 5. Hybrid Mode (Pi + PC)
+Ability to run the backend on a Raspberry Pi and the frontend on a PC, or everything on the same machine.
 
 ---
 
-## Installation & Utilisation
+## Technical Requirements
 
-### 1. Préparation du Backend
+### Software
+- **Python 3.9+**: For the calculation engine and AI.
+- **Node.js 18+**: For the user interface.
+- **Key Libraries**:
+  - `mediapipe`: Skeleton detection.
+  - `fastapi`: High-performance web server.
+  - `ultralytics` (YOLO): Alternative for pose.
+  - `tensorflow/keras`: For the LSTM model.
+
+### Hardware
+- **Webcam**: 720p recommended for better detection.
+- **Processor**: Modern CPU (Intel i5/Ryzen 5) or Raspberry Pi 4/5.
+- **Memory**: Minimum 4 GB of RAM.
+
+---
+
+## Installation & Usage
+
+### 1. Backend Preparation
 ```bash
 cd backend
 python -m venv venv
-# Activer le venv (Windows: venv\Scripts\activate)
+# Activate the venv (Windows: venv\Scripts\activate)
 pip install -r requirements.txt
 python main.py
 ```
 
-### 2. Préparation du Frontend
+### 2. Frontend Preparation
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-Accédez ensuite à `http://localhost:3000` pour commencer votre entraînement.
+Access `http://localhost:3000` to start your training.
 
 ---
 
-## Structure des Dossiers (Après Nettoyage)
-- `/backend/tests` : Tests de validation des modèles.
-- `/backend/models` : Modèles IA (.h5, .onnx, .pt, .task).
-- `/backend/scripts` : Scripts d'installation et de lancement.
-- `/frontend/components` : Composants UI (React).
-- `/docs` : Guides détaillés et architecture.
+## Folder Structure (After Cleanup)
+- `/backend/tests`: Model validation tests.
+- `/backend/models`: AI models (.h5, .onnx, .pt, .task).
+- `/backend/scripts`: Installation and launch scripts.
+- `/frontend/components`: UI components (React).
+- `/docs`: Detailed guides and architecture.
 
 ---
 
-*Développé pour offrir une expérience de coaching sportif intelligente et accessible.* 
+### 📄 Complete Documentation
+For more details, see the specific guides:
+- [Hybrid Deployment Guide (Vercel + Pi)](docs/DEPLOYMENT_VERCEL_PI.md)
+- [Hardware Configuration (LEDs, Buzzer, Servo)](docs/HARDWARE_CONFIG.md)
+- [Raspberry Pi Installation Guide](docs/Setup_RaspberryPi.md)
+- [System Architecture](docs/Architecture.md)
+
+---
+
+*Developed to provide an intelligent and accessible sports coaching experience.*
+ 
+---
+**Author:** Moussaif Abdelkabir
+**Date:** Feb 15, 2026
