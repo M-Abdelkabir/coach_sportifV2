@@ -200,8 +200,8 @@ class PoseDetector:
                 self.yolo_model = YOLO(str(YOLO_MODEL_PATH))
             else:
                 # 2. Fallback to nano model (will auto-download)
-                print("[POSE] Unified model not found. Using 'yolov8n-pose.pt'...")
-                self.yolo_model = YOLO("yolov8n-pose.pt")
+                print(f"[POSE] Unified model not found. Using {MODEL_DIR / 'yolov8n-pose.pt'}...")
+                self.yolo_model = YOLO(str(MODEL_DIR / "yolov8n-pose.pt"))
                 
             print("[POSE] YOLO model loaded successfully")
         except ImportError:

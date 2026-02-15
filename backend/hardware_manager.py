@@ -89,6 +89,13 @@ class HardwareManager:
         else:
             print(f"[HW-MGR] SIM BUZZER: {pattern} ({duration_ms}ms)")
 
+    def set_camera_pan(self, angle: float):
+        """Set camera pan angle."""
+        if self.use_real_hw:
+            self.pi.set_pan(angle)
+        else:
+            print(f"[HW-MGR] SIM CAMERA PAN: {angle}°")
+
 # Global instance
 _manager: Optional[HardwareManager] = None
 

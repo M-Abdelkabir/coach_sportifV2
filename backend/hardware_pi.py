@@ -8,7 +8,7 @@ from typing import Optional
 
 # Attempt to import gpiozero (recommended for RPi)
 try:
-    from gpiozero import RGBLED, Buzzer
+    from gpiozero import RGBLED, Buzzer, AngularServo
     GPIO_AVAILABLE = True
 except ImportError:
     GPIO_AVAILABLE = False
@@ -20,16 +20,21 @@ class PiHardwareController:
     Buzzer pin: 23
     """
     
-    def __init__(self, red_pin=17, green_pin=27, blue_pin=22, buzzer_pin=23):
+    def __init__(self, red_pin=17, green_pin=27, blue_pin=22, buzzer_pin=23, servo_pin=18):
         self.enabled = GPIO_AVAILABLE
         self.led = None
         self.buzzer = None
+        self.servo = None
+        self.current_pan = 0  # Center
         
         if self.enabled:
             try:
                 self.led = RGBLED(red=red_pin, green=green_pin, blue=blue_pin)
                 self.buzzer = Buzzer(buzzer_pin)
-                print(f"[PI-HW] Hardware initialized on pins: LED({red_pin},{green_pin},{blue_pin}), Buzzer({buzzer_pin})")
+                # AngularServo: initial_angle=0, min_angle=-90, max_angle=90
+                # min_pulse_width and max_pulse_width might need adjustment depending on the servo
+                self.servo = AngularServo(servo_pin, initial_angle=0, min_angle=-90, max_angle=90)
+                print(f"[PI-HW] Hardware initialized: LED({red_pin},{green_pin},{blue_pin}), Buzzer({buzzer_pin}), Servo({servo_pin})")
             except Exception as e:
                 print(f"[PI-HW] Failed to initialize GPIO: {e}")
                 self.enabled = False
@@ -91,6 +96,18 @@ class PiHardwareController:
             threading.Thread(target=sequence, daemon=True).start()
         elif pattern == "error":
             self.buzzer.beep(on_time=0.5, n=1)
+
+    def set_pan(self, angle: float):
+        """
+        Set camera pan angle (-90 to 90).
+        """
+        if not self.enabled or not self.servo:
+            return
+            
+        # Clamp angle
+        angle = max(-90, min(90, angle))
+        self.servo.angle = angle
+        self.current_pan = angle
 
 # Global instance
 _pi_controller: Optional[PiHardwareController] = None
