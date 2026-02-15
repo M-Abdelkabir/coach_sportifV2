@@ -42,7 +42,7 @@ sudo apt install libgstreamer1.0-0 gstreamer1.0-plugins-base gstreamer1.0-plugin
 You can use the diagnostic script to verify your wiring:
 ```bash
 # In the backend/scripts/ folder
-python test_hardware.py
+./test_hardware.sh
 ```
 *(If the script is not present, it will be available soon in the diagnostic tools.)*
 
